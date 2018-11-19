@@ -25,6 +25,8 @@ public class Constant {
 
     public static final String ERROR = "网络异常，稍后重试";
 
+    public static final int SocketFoodChange = 0;
+
 
     public static String getSafeParameter(HttpServletRequest request, String arg) {
         String param = request.getParameter(arg);
