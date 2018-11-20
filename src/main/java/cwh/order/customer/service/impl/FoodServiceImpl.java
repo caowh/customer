@@ -8,6 +8,7 @@ import cwh.order.customer.model.Table;
 import cwh.order.customer.service.FoodService;
 import cwh.order.customer.util.HandleException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -27,24 +28,23 @@ public class FoodServiceImpl implements FoodService {
     private TableDao tableDao;
 
     @Override
-    public Map getFoods(String openid, String store_id, long table_id) throws HandleException {
+    @Transactional
+    public Map getFoods(String openid, String store_id, String table_id) throws HandleException {
         Map<String, Object> map = new HashMap<>();
+        if(store_id.equals("")){
+            Table table = tableDao.query(Long.parseLong(table_id));
+            if (table == null) {
+                throw new HandleException("餐桌不存在");
+            }
+            store_id = table.getOpenid();
+            map.put("tableName", table.getT_name());
+        }
         Store store = storeDao.query(store_id);
-        if (store == null) {
+        if(store == null){
             throw new HandleException("店铺不存在");
         }
         if (store.getBusiness() == 0) {
             throw new HandleException("店铺已打烊");
-        }
-        if (table_id != 0) {
-            Table table = new Table();
-            table.setId(table_id);
-            table.setOpenid(store_id);
-            String tableName = tableDao.queryName(table);
-            if (tableName == null) {
-                throw new HandleException("餐桌不存在");
-            }
-            map.put("tableName", tableName);
         }
         map.put("store", store);
         map.put("foods", foodDao.queryAll(store_id));

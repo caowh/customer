@@ -29,7 +29,7 @@ public class FoodController {
         Map<String, Object> map = new HashMap<>();
         String openid = request.getAttribute("openid").toString();
         String store_id = getSafeParameter(request, "store_id");
-        long table_id = Long.parseLong(getSafeParameter(request, "table_id"));
+        String table_id = getSafeParameter(request, "table_id");
         try {
             map.put("message", foodService.getFoods(openid, store_id, table_id));
             map.put("status", Constant.CODE_OK);

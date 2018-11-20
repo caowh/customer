@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="cwh.order.customer.dao.TableDao">
 
-    <select id="queryName" parameterType="cwh.order.customer.model.Table" resultType="java.lang.String">
-        SELECT t_name FROM FOOD_TABLE WHERE id = #{id} AND openid = #{openid};
+    <select id="query" parameterType="java.lang.Long" resultType="cwh.order.customer.model.Table">
+        SELECT id,t_name,openid FROM FOOD_TABLE WHERE id = #{id};
     </select>
 
 </mapper>

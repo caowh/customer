@@ -22,7 +22,11 @@ public class MyHttpSessionHandshakeInterceptor extends HttpSessionHandshakeInter
         if (request instanceof ServletServerHttpRequest) {
             ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
             Object openid = servletRequest.getServletRequest().getAttribute("openid");
+            String tableid = servletRequest.getServletRequest().getParameter("tableid");
+            String nickname = servletRequest.getServletRequest().getParameter("nickname");
             attributes.put("openid", openid);
+            attributes.put("tableid", tableid);
+            attributes.put("nickname", nickname);
         }
         return super.beforeHandshake(request, response, wsHandler, attributes);
     }

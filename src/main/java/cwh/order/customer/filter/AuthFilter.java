@@ -33,7 +33,7 @@ public class AuthFilter implements Filter {
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
             httpServletResponse.setHeader("Access-Control-Allow-Methods", "*");
-            httpServletResponse.setHeader("Access-Control-Allow-Headers", "content-type,token,nickName,table_id");
+            httpServletResponse.setHeader("Access-Control-Allow-Headers", "content-type,token");
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             if (httpServletRequest.getMethod().equals("OPTIONS")) {
                 httpServletResponse.setStatus(200);

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TableDao {
 
-    String queryName(Table table);
+    Table query(long id);
 }

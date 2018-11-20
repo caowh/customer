@@ -9,5 +9,5 @@ import java.util.Map;
  */
 public interface FoodService {
 
-    Map getFoods(String openid, String store_id, long table_id) throws HandleException;
+    Map getFoods(String openid, String store_id, String table_id) throws HandleException;
 }
