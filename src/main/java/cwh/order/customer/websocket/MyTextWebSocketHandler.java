@@ -38,7 +38,7 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
         String openid = session.getAttributes().get("openid").toString();
         String table_id = session.getAttributes().get("tableid").toString();
         String nickName = session.getAttributes().get("nickname").toString();
-        logger.info("openid is {},table_id is {},message is {}", openid, table_id, message.getPayload());
+        logger.info("receive message,openid is {},table_id is {},message is {}", openid, table_id, message.getPayload());
         JSONObject jsonObject = JSONObject.parseObject(message.getPayload());
         int type = jsonObject.getInteger("type");
         String food_key = table_id + Constant.separator + "food";
@@ -95,8 +95,6 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
             } else {
                 jsonObject2.put("foods", list);
             }
-            logger.info("----------------foodChange-------------------");
-            logger.info(jsonObject2.toJSONString());
             broadcast(userKey, makeMessage(jsonObject2));
         } else if (type == Constant.CLEAN_FOOD) {
             redisTemplate.delete(food_key);
@@ -106,7 +104,9 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
     }
 
     private TextMessage makeMessage(JSONObject jsonObject) {
-        return new TextMessage(jsonObject.toJSONString());
+        String message = jsonObject.toJSONString();
+        logger.info("send message {}", message);
+        return new TextMessage(message);
     }
 
     private void lock(String table_id, String uuid) {
@@ -155,10 +155,10 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
-        System.out.println("-----------------open-------------------");
         String openid = session.getAttributes().get("openid").toString();
         String table_id = session.getAttributes().get("tableid").toString();
         String nickName = session.getAttributes().get("nickname").toString();
+        logger.info("connection opened,openid is {},table_id is {},nickName is {}", openid, table_id, nickName);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", Constant.ADD_ORDER);
         jsonObject.put("name", nickName);
@@ -192,11 +192,12 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
     //连接关闭后处理
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        System.out.println("-----------------close-------------------");
         String openid = session.getAttributes().get("openid").toString();
         String table_id = session.getAttributes().get("tableid").toString();
+        String nickName = session.getAttributes().get("nickname").toString();
         sessionMap.remove(openid);
         redisTemplate.opsForSet().remove(table_id + Constant.separator + "user", openid);
+        logger.info("connection closed,openid is {},table_id is {},nickName is {}", openid, table_id, nickName);
         super.afterConnectionClosed(session, status);
     }
 
@@ -204,6 +205,10 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         super.handleTransportError(session, exception);
+        String openid = session.getAttributes().get("openid").toString();
+        String table_id = session.getAttributes().get("tableid").toString();
+        String nickName = session.getAttributes().get("nickname").toString();
+        logger.warn("handleTransportError,openid is {},table_id is {},nickName is {}", openid, table_id, nickName);
         if (session.isOpen())
             session.close();
         if (exception instanceof EOFException) {
