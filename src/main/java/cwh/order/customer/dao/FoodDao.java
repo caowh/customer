@@ -15,4 +15,5 @@ public interface FoodDao {
     List<Food> queryAll(String store_id);
 
     BigDecimal queryPrice(long food_id);
+
 }

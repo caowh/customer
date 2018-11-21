@@ -108,7 +108,18 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private TextMessage makeMessage(JSONObject jsonObject) {
+    public static void sendMessage(String openid,JSONObject jsonObject){
+        WebSocketSession socketSession = sessionMap.get(openid);
+        if(socketSession != null){
+            try {
+                socketSession.sendMessage(makeMessage(jsonObject));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static TextMessage makeMessage(JSONObject jsonObject) {
         String message = jsonObject.toJSONString();
         logger.info("send message {}", message);
         return new TextMessage(message);
@@ -141,12 +152,6 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
         broadcast(userKey, makeMessage(jsonObject));
         sessionMap.put(openid, session);
         redisTemplate.opsForSet().add(userKey, openid);
-        String uniqueId = String.valueOf(idWorker.nextId());
-        redisTemplate.opsForValue().setIfAbsent(table_id + Constant.separator + "key", uniqueId);
-        JSONObject jsonObject2 = new JSONObject();
-        jsonObject2.put("type", Constant.ORDER_KEY);
-        jsonObject2.put("order", uniqueId);
-        session.sendMessage(makeMessage(jsonObject2));
         String foods = redisTemplate.opsForValue().get(table_id + Constant.separator + "food");
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("type", Constant.FIRST_FOOD);
@@ -154,6 +159,14 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
             jsonObject1.put("foods", "0");
         } else {
             jsonObject1.put("foods", JSONArray.parseArray(foods));
+        }
+        String uniqueId = String.valueOf(idWorker.nextId());
+        String key = table_id + Constant.separator + "key";
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, uniqueId);
+        if (result != null && result) {
+            jsonObject1.put("order", uniqueId);
+        } else {
+            jsonObject1.put("order", redisTemplate.opsForValue().get(key));
         }
         session.sendMessage(makeMessage(jsonObject1));
     }

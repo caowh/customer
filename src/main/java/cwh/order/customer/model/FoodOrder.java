@@ -21,6 +21,7 @@ public class FoodOrder {
     private BigDecimal total_price;
     private String phone;
     private String message;
+    private int sort;
 
     private Date pay_time;
 

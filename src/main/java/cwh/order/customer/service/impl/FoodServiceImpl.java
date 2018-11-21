@@ -11,6 +11,7 @@ import cwh.order.customer.service.FoodService;
 import cwh.order.customer.util.Constant;
 import cwh.order.customer.util.HandleException;
 import cwh.order.customer.util.IdWorker;
+import cwh.order.customer.websocket.MyTextWebSocketHandler;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +67,7 @@ public class FoodServiceImpl implements FoodService {
 
     @Override
     @Transactional
-    public long order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException {
+    public void order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException {
         String table_name = null;
         if (store_id.equals("")) {
             Table table = tableDao.query(Long.parseLong(table_id));
@@ -103,13 +104,12 @@ public class FoodServiceImpl implements FoodService {
             if (t_price.compareTo(price) != 0) {
                 throw new HandleException("菜品“" + name + "”价格改变");
             }
-            int count = food.getIntValue("change");
+            int count = food.getIntValue("count");
             if (count <= 0) {
                 throw new HandleException("菜品“" + name + "”数量必须大于零");
             }
             total_price = total_price.add(t_price.multiply(new BigDecimal(count)));
             FoodSale foodSale = new FoodSale();
-            foodSale.setOrder_id(id);
             foodSale.setFood_id(food_id);
             foodSale.setFood_count(count);
             foodSale.setFood_name(name);
@@ -124,7 +124,6 @@ public class FoodServiceImpl implements FoodService {
         foodOrder.setCreate_time(new Date());
         foodOrder.setPhone(phone);
         foodOrder.setMessage(message);
-        foodOrder.setId(id);
         if (!table_id.equals("")) {
             String uniqueId = String.valueOf(id);
             idWorker.lock(table_id, uniqueId);
@@ -136,21 +135,34 @@ public class FoodServiceImpl implements FoodService {
             }
             foodOrder.setTable_id(Long.parseLong(table_id));
             foodOrder.setT_name(table_name);
+            if (oldId == null) {
+                throw new HandleException("请重进小程序下单");
+            }
+            long oldId1 = Long.parseLong(oldId);
+            foodOrder.setId(oldId1);
             foodOrderDao.insert(foodOrder);
+            for (FoodSale foodSale : foodSales) {
+                foodSale.setOrder_id(oldId1);
+                foodSaleDao.insert(foodSale);
+            }
             redisTemplate.delete(table_id + Constant.separator + "food");
             redisTemplate.opsForValue().set(key, uniqueId);
             idWorker.unLock(table_id, uniqueId);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("type", Constant.ORDER_KEY);
+            jsonObject.put("order", id);
+            MyTextWebSocketHandler.sendMessage(openid, jsonObject);
         } else {
+            foodOrder.setId(id);
             foodOrderDao.insert(foodOrder);
+            for (FoodSale foodSale : foodSales) {
+                foodSaleDao.insert(foodSale);
+            }
         }
-        for (FoodSale foodSale : foodSales) {
-            foodSaleDao.insert(foodSale);
-        }
-        return id;
     }
 
     @Override
     public List<FoodOrder> getOrders(String openid) {
-       return foodOrderDao.query(openid);
+        return foodOrderDao.query(openid);
     }
 }

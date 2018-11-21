@@ -3,7 +3,7 @@
 <mapper namespace="cwh.order.customer.dao.FoodSaleDao">
 
     <insert id="insert" parameterType="cwh.order.customer.model.FoodSale">
-        INSERT INTO FOOD_ORDER(order_id,food_id,food_name,food_price,food_count)
+        INSERT INTO FOOD_SALE(order_id,food_id,food_name,food_price,food_count)
         VALUES (#{order_id},#{food_id},#{food_name},#{food_price},#{food_count})
     </insert>
 </mapper>

@@ -13,7 +13,7 @@ public interface FoodService {
 
     Map getFoods(String openid, String store_id, String table_id) throws HandleException;
 
-    long order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException;
+    void order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException;
 
     List<FoodOrder> getOrders(String openid);
 }

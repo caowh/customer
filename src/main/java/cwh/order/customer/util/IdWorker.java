@@ -81,7 +81,7 @@ public class IdWorker {
 
     public void lock(String table_id, String uniqueId) {
         String lock_key = table_id + Constant.separator + "lock";
-        long max_time = 500;
+        long max_time = 800;
         long waitTime = 0;
         while (waitTime < max_time) {
             Boolean result = redisTemplate.opsForValue().setIfAbsent(lock_key, uniqueId, max_time, TimeUnit.MILLISECONDS);

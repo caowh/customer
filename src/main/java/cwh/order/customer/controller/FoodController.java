@@ -51,7 +51,7 @@ public class FoodController {
         String message = getSafeParameter(request, "message");
         String foods = request.getParameter("foods").replaceAll("'", "’").trim();
         try {
-            map.put("message", foodService.order(openid, foods, store_id, table_id, order, phone, message));
+            foodService.order(openid, foods, store_id, table_id, order, phone, message);
             map.put("status", Constant.CODE_OK);
         } catch (HandleException e) {
             map.put("status", Constant.CODE_ERROR);

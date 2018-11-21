@@ -3,11 +3,15 @@
 <mapper namespace="cwh.order.customer.dao.FoodOrderDao">
 
     <insert id="insert" parameterType="cwh.order.customer.model.FoodOrder">
-        INSERT INTO FOOD_ORDER(id,table_id,t_name,create_time,openid,store_id,store_name,total_price,phone,message)
-        VALUES (#{id},#{table_id},#{t_name},#{create_time},#{openid},#{store_id},#{store_name},#{total_price},#{phone},#{message})
+        INSERT INTO FOOD_ORDER(id,table_id,t_name,create_time,openid,store_id,store_name,total_price,phone,message,sort)
+        VALUES (#{id},#{table_id},#{t_name},#{create_time},#{openid},#{store_id},#{store_name},#{total_price},#{phone},#{message},#{sort})
     </insert>
 
     <select id="query" parameterType="cwh.order.customer.model.FoodOrder" resultType="cwh.order.customer.model.FoodOrder">
         SELECT fo.id,fo.create_time,fo.total_price,fp.pay_time FROM FOOD_ORDER fo LEFT JOIN FOOD_PAY fp ON fo.id = fp.order_id WHERE openid = #{openid}
+    </select>
+
+    <select id="queryCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(0) FROM FOOD_ORDER WHERE id = #{id}
     </select>
 </mapper>
