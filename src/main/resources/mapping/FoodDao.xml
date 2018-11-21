@@ -8,4 +8,7 @@
         fc.openid = #{store_id} AND f.status = 1 ORDER BY monthly_sale;
     </select>
 
+    <select id="queryPrice" parameterType="java.lang.Long" resultType="java.math.BigDecimal">
+        SELECT price FROM FOOD WHERE id = #{id};
+    </select>
 </mapper>

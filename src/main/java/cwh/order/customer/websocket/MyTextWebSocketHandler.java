@@ -3,6 +3,7 @@ package cwh.order.customer.websocket;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import cwh.order.customer.util.Constant;
+import cwh.order.customer.util.IdWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,7 +18,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +31,8 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(MyTextWebSocketHandler.class);
     @Resource
     private RedisTemplate<String, String> redisTemplate;
+    @Resource
+    private IdWorker idWorker;
 
     //处理文本消息
     @Override
@@ -47,8 +49,8 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
             jsonObject.remove("type");
             long id = jsonObject.getLong("id");
             int change = jsonObject.getInteger("change");
-            String uuid = UUID.randomUUID().toString();
-            lock(table_id, uuid);
+            String uniqueId = String.valueOf(idWorker.nextId());
+            idWorker.lock(table_id, uniqueId);
             String foods = redisTemplate.opsForValue().get(food_key);
             JSONArray list;
             if (foods == null) {
@@ -84,7 +86,7 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
             } else {
                 redisTemplate.opsForValue().set(food_key, list.toJSONString());
             }
-            unLock(table_id, uuid);
+            idWorker.unLock(table_id, uniqueId);
             JSONObject jsonObject1 = JSONObject.parseObject(message.getPayload());
             jsonObject1.put("nickname", nickName);
             broadcastNotSelf(userKey, makeMessage(jsonObject1), openid);
@@ -97,7 +99,10 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
             }
             broadcast(userKey, makeMessage(jsonObject2));
         } else if (type == Constant.CLEAN_FOOD) {
+            String uniqueId = String.valueOf(idWorker.nextId());
+            idWorker.lock(table_id, uniqueId);
             redisTemplate.delete(food_key);
+            idWorker.unLock(table_id, uniqueId);
             jsonObject.put("name", nickName);
             broadcastNotSelf(userKey, makeMessage(jsonObject), openid);
         }
@@ -107,36 +112,6 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
         String message = jsonObject.toJSONString();
         logger.info("send message {}", message);
         return new TextMessage(message);
-    }
-
-    private void lock(String table_id, String uuid) {
-        String lock_key = table_id + Constant.separator + "lock";
-        long max_time = 500;
-        long waitTime = 0;
-        while (waitTime < max_time) {
-            Boolean result = redisTemplate.opsForValue().setIfAbsent(lock_key, uuid, max_time, TimeUnit.MILLISECONDS);
-            if (result != null && result) {
-                break;
-            } else {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                waitTime += 10;
-            }
-        }
-        if (waitTime == max_time) {
-            redisTemplate.opsForValue().set(lock_key, uuid, max_time, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private void unLock(String table_id, String uuid) {
-        String lock_key = table_id + Constant.separator + "lock";
-        String result = redisTemplate.opsForValue().get(lock_key);
-        if (result != null && result.equals(uuid)) {
-            redisTemplate.delete(lock_key);
-        }
     }
 
     private void broadcastNotSelf(String userKey, TextMessage message, String openid) throws IOException {
@@ -166,6 +141,12 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
         broadcast(userKey, makeMessage(jsonObject));
         sessionMap.put(openid, session);
         redisTemplate.opsForSet().add(userKey, openid);
+        String uniqueId = String.valueOf(idWorker.nextId());
+        redisTemplate.opsForValue().setIfAbsent(table_id + Constant.separator + "key", uniqueId);
+        JSONObject jsonObject2 = new JSONObject();
+        jsonObject2.put("type", Constant.ORDER_KEY);
+        jsonObject2.put("order", uniqueId);
+        session.sendMessage(makeMessage(jsonObject2));
         String foods = redisTemplate.opsForValue().get(table_id + Constant.separator + "food");
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("type", Constant.FIRST_FOOD);

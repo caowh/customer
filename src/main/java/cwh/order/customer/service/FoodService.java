@@ -1,7 +1,9 @@
 package cwh.order.customer.service;
 
+import cwh.order.customer.model.FoodOrder;
 import cwh.order.customer.util.HandleException;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,4 +12,8 @@ import java.util.Map;
 public interface FoodService {
 
     Map getFoods(String openid, String store_id, String table_id) throws HandleException;
+
+    long order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException;
+
+    List<FoodOrder> getOrders(String openid);
 }

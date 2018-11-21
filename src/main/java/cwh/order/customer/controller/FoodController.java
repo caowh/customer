@@ -37,7 +37,37 @@ public class FoodController {
             map.put("status", Constant.CODE_ERROR);
             map.put("error_message", e.getMessage());
         }
-
         return map;
     }
+
+    @PostMapping("order")
+    public Map<String, Object> order(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        String store_id = getSafeParameter(request, "store_id");
+        String table_id = getSafeParameter(request, "table_id");
+        String order = getSafeParameter(request, "order");
+        String phone = getSafeParameter(request, "phone");
+        String message = getSafeParameter(request, "message");
+        String foods = request.getParameter("foods").replaceAll("'", "’").trim();
+        try {
+            map.put("message", foodService.order(openid, foods, store_id, table_id, order, phone, message));
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
+
+    @PostMapping("getOrders")
+    public Map<String, Object> getOrders(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        map.put("message", foodService.getOrders(openid));
+        map.put("status", Constant.CODE_OK);
+        return map;
+    }
+
+
 }

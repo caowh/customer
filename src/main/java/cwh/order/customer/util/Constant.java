@@ -35,6 +35,7 @@ public class Constant {
 
     public static final int FIRST_FOOD = 4;
 
+    public static final int ORDER_KEY = 5;
 
     public static String getSafeParameter(HttpServletRequest request, String arg) {
         String param = request.getParameter(arg);
