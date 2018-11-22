@@ -1,8 +1,8 @@
 package cwh.order.customer.dao;
 
 import cwh.order.customer.model.FoodOrder;
+import cwh.order.customer.util.PageQuery;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 /**
@@ -15,5 +15,9 @@ public interface FoodOrderDao {
 
     int queryCount(long id);
 
-    List<FoodOrder> query(String openid);
+    FoodOrder queryDetail(FoodOrder foodOrder);
+
+    List<FoodOrder> query(PageQuery pageQuery);
+
+    int updateStatus(FoodOrder foodOrder);
 }

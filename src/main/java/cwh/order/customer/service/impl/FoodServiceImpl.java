@@ -11,6 +11,7 @@ import cwh.order.customer.service.FoodService;
 import cwh.order.customer.util.Constant;
 import cwh.order.customer.util.HandleException;
 import cwh.order.customer.util.IdWorker;
+import cwh.order.customer.util.PageQuery;
 import cwh.order.customer.websocket.MyTextWebSocketHandler;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -124,6 +125,7 @@ public class FoodServiceImpl implements FoodService {
         foodOrder.setCreate_time(new Date());
         foodOrder.setPhone(phone);
         foodOrder.setMessage(message);
+        foodOrder.setHeadPictureUrl(store.getHeadPictureUrl());
         if (!table_id.equals("")) {
             String uniqueId = String.valueOf(id);
             idWorker.lock(table_id, uniqueId);
@@ -156,13 +158,46 @@ public class FoodServiceImpl implements FoodService {
             foodOrder.setId(id);
             foodOrderDao.insert(foodOrder);
             for (FoodSale foodSale : foodSales) {
+                foodSale.setOrder_id(id);
                 foodSaleDao.insert(foodSale);
             }
         }
     }
 
     @Override
-    public List<FoodOrder> getOrders(String openid) {
-        return foodOrderDao.query(openid);
+    public List<FoodOrder> getOrders(String openid, int status, int page, int count) {
+        PageQuery pageQuery = new PageQuery();
+        pageQuery.setInt_param(status);
+        pageQuery.setCount(count);
+        pageQuery.setStart(page * count);
+        pageQuery.setString_param(openid);
+        return foodOrderDao.query(pageQuery);
+    }
+
+    @Override
+    @Transactional
+    public FoodOrder getOrderDetail(String openid, long order_id) throws HandleException {
+        FoodOrder foodOrder = new FoodOrder();
+        foodOrder.setId(order_id);
+        foodOrder.setOpenid(openid);
+        FoodOrder foodOrder1 = foodOrderDao.queryDetail(foodOrder);
+        if (foodOrder1 == null) {
+            throw new HandleException("订单不存在");
+        }
+        foodOrder1.setFoodSales(foodSaleDao.queryByOrder(order_id));
+        return foodOrder1;
+    }
+
+    @Override
+    public void cancelOrder(String openid, long order_id, String reason) throws HandleException {
+        FoodOrder foodOrder = new FoodOrder();
+        foodOrder.setId(order_id);
+        foodOrder.setOpenid(openid);
+        foodOrder.setStatus(2);
+        foodOrder.setReason(reason);
+        int result = foodOrderDao.updateStatus(foodOrder);
+        if (result == 0) {
+            throw new HandleException("订单无法取消");
+        }
     }
 }

@@ -9,6 +9,6 @@
     </select>
 
     <select id="queryPrice" parameterType="java.lang.Long" resultType="java.math.BigDecimal">
-        SELECT price FROM FOOD WHERE id = #{id};
+        SELECT price FROM FOOD WHERE id = #{id} FOR UPDATE;
     </select>
 </mapper>

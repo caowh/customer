@@ -3,15 +3,35 @@
 <mapper namespace="cwh.order.customer.dao.FoodOrderDao">
 
     <insert id="insert" parameterType="cwh.order.customer.model.FoodOrder">
-        INSERT INTO FOOD_ORDER(id,table_id,t_name,create_time,openid,store_id,store_name,total_price,phone,message,sort)
-        VALUES (#{id},#{table_id},#{t_name},#{create_time},#{openid},#{store_id},#{store_name},#{total_price},#{phone},#{message},#{sort})
+        INSERT INTO FOOD_ORDER(id,table_id,t_name,create_time,openid,store_id,store_name,total_price,phone,message,sort,headPictureUrl)
+        VALUES (#{id},#{table_id},#{t_name},#{create_time},#{openid},#{store_id},#{store_name},#{total_price},#{phone},#{message},
+        <choose>
+            <when test="t_name == null">
+                (SELECT _nextval(#{store_id}))
+            </when>
+            <otherwise>
+                0
+            </otherwise>
+        </choose>
+        ,#{headPictureUrl})
     </insert>
 
-    <select id="query" parameterType="cwh.order.customer.model.FoodOrder" resultType="cwh.order.customer.model.FoodOrder">
-        SELECT fo.id,fo.create_time,fo.total_price,fp.pay_time FROM FOOD_ORDER fo LEFT JOIN FOOD_PAY fp ON fo.id = fp.order_id WHERE openid = #{openid}
+    <select id="query" parameterType="cwh.order.customer.util.PageQuery" resultType="cwh.order.customer.model.FoodOrder">
+        SELECT id,create_time,store_name,headPictureUrl,total_price,sort,table_id,t_name
+        FROM FOOD_ORDER WHERE openid = #{string_param} AND status = #{int_param}
+        ORDER BY create_time DESC limit #{start},#{count};
     </select>
 
     <select id="queryCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
         SELECT COUNT(0) FROM FOOD_ORDER WHERE id = #{id}
     </select>
+
+    <select id="queryDetail" parameterType="cwh.order.customer.model.FoodOrder" resultType="cwh.order.customer.model.FoodOrder">
+        SELECT id,table_id,t_name,create_time,store_id,store_name,total_price,phone,message,sort,headPictureUrl FROM FOOD_ORDER
+        WHERE id = #{id} AND openid = #{openid}
+    </select>
+
+    <update id="updateStatus" parameterType="cwh.order.customer.model.FoodOrder">
+        UPDATE FOOD_ORDER SET status = #{status},reason = #{reason} WHERE id = #{id} AND openid = #{openid} AND status = 0
+    </update>
 </mapper>

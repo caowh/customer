@@ -15,5 +15,9 @@ public interface FoodService {
 
     void order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException;
 
-    List<FoodOrder> getOrders(String openid);
+    List<FoodOrder> getOrders(String openid, int status, int page, int count);
+
+    FoodOrder getOrderDetail(String openid, long order_id) throws HandleException;
+
+    void cancelOrder(String openid, long order_id, String reason) throws HandleException;
 }

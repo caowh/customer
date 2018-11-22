@@ -64,10 +64,43 @@ public class FoodController {
     public Map<String, Object> getOrders(HttpServletRequest request) {
         Map<String, Object> map = new HashMap<>();
         String openid = request.getAttribute("openid").toString();
-        map.put("message", foodService.getOrders(openid));
+        int status = Integer.parseInt(getSafeParameter(request, "status"));
+        int page = Integer.parseInt(getSafeParameter(request, "page"));
+        int count = Integer.parseInt(getSafeParameter(request, "count"));
+        map.put("message", foodService.getOrders(openid, status, page, count));
         map.put("status", Constant.CODE_OK);
         return map;
     }
 
+    @PostMapping("getOrderDetail")
+    public Map<String, Object> getOrderDetail(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        long id = Long.parseLong(getSafeParameter(request, "id"));
+        try {
+            map.put("message", foodService.getOrderDetail(openid, id));
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
+
+    @PostMapping("cancelOrder")
+    public Map<String, Object> cancelOrder(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        long id = Long.parseLong(getSafeParameter(request, "id"));
+        String reason = getSafeParameter(request, "reason");
+        try {
+            foodService.cancelOrder(openid, id, reason);
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
 
 }

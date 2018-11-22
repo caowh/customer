@@ -1,5 +1,7 @@
 package cwh.order.customer.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -10,11 +12,13 @@ import java.math.BigDecimal;
 @Data
 public class Food {
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private long id;
     private String f_name;
     private String description;
     private BigDecimal price;
     private int status;
+    @JsonSerialize(using = ToStringSerializer.class)
     private long classify_id;
     private String picture_url;
 
