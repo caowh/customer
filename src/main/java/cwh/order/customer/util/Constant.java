@@ -37,6 +37,8 @@ public class Constant {
 
     public static final int ORDER_KEY = 5;
 
+    public static final String FILEPATH = "/usr/share/nginx/html";
+
     public static String getSafeParameter(HttpServletRequest request, String arg) {
         String param = request.getParameter(arg);
         return param == null ? "" : param.replaceAll("\"", "“").

@@ -1,8 +1,6 @@
 package cwh.order.customer.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -15,9 +13,7 @@ import java.util.List;
 @Data
 public class FoodOrder {
 
-    @JsonSerialize(using = ToStringSerializer.class)
     private long id;
-    @JsonSerialize(using = ToStringSerializer.class)
     private long table_id;
     private String t_name;
     @JSONField(format="yyyy-MM-dd HH:mm:ss")
@@ -35,5 +31,6 @@ public class FoodOrder {
 
 
     private List<FoodSale> foodSales;
+    private int evaluate;
 
 }

@@ -20,4 +20,6 @@ public interface FoodOrderDao {
     List<FoodOrder> query(PageQuery pageQuery);
 
     int updateStatus(FoodOrder foodOrder);
+
+    int queryStatus(FoodOrder foodOrder);
 }

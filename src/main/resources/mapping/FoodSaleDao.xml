@@ -11,4 +11,7 @@
         SELECT food_id,food_name,food_price,food_count FROM FOOD_SALE WHERE order_id = #{id}
     </select>
 
+    <update id="updatePraise" parameterType="cwh.order.customer.model.FoodSale">
+        UPDATE FOOD_SALE SET praise = #{praise} WHERE order_id = #{order_id} AND food_id = #{food_id} AND praise=0
+    </update>
 </mapper>

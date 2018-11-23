@@ -14,4 +14,6 @@ public interface FoodSaleDao {
     void insert(FoodSale foodSale);
 
     List<FoodSale> queryByOrder(long id);
+
+    int updatePraise(FoodSale foodSale);
 }

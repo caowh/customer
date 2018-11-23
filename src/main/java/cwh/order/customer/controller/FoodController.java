@@ -6,6 +6,8 @@ import cwh.order.customer.util.HandleException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -95,6 +97,41 @@ public class FoodController {
         String reason = getSafeParameter(request, "reason");
         try {
             foodService.cancelOrder(openid, id, reason);
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
+
+    @PostMapping("orderEvaluate")
+    public Map<String, Object> orderEvaluate(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        long id = Long.parseLong(getSafeParameter(request, "id"));
+        int type = Integer.parseInt(getSafeParameter(request, "type"));
+        String message = getSafeParameter(request, "message");
+        String foods = getSafeParameter(request, "foods");
+        try {
+            foodService.orderEvaluate(openid, id, type, message, foods);
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
+
+    @PostMapping("uploadEvaluatePicture")
+    public Map<String, Object> uploadEvaluatePicture(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        long id = Long.parseLong(getSafeParameter(request, "id"));
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        MultipartFile file = multipartRequest.getFile("picture");
+        try {
+            foodService.uploadEvaluatePicture(openid, id, file);
             map.put("status", Constant.CODE_OK);
         } catch (HandleException e) {
             map.put("status", Constant.CODE_ERROR);

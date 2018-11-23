@@ -3,21 +3,18 @@ package cwh.order.customer.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import cwh.order.customer.dao.*;
-import cwh.order.customer.model.FoodOrder;
-import cwh.order.customer.model.FoodSale;
-import cwh.order.customer.model.Store;
-import cwh.order.customer.model.Table;
+import cwh.order.customer.model.*;
 import cwh.order.customer.service.FoodService;
-import cwh.order.customer.util.Constant;
-import cwh.order.customer.util.HandleException;
-import cwh.order.customer.util.IdWorker;
-import cwh.order.customer.util.PageQuery;
+import cwh.order.customer.util.*;
 import cwh.order.customer.websocket.MyTextWebSocketHandler;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -41,6 +38,10 @@ public class FoodServiceImpl implements FoodService {
     private RedisTemplate<String, String> redisTemplate;
     @Resource
     private FoodSaleDao foodSaleDao;
+    @Resource
+    private OrderEvaluateDao orderEvaluateDao;
+    @Resource
+    private EvaluatePictureDao evaluatePictureDao;
 
     @Override
     @Transactional
@@ -199,5 +200,72 @@ public class FoodServiceImpl implements FoodService {
         if (result == 0) {
             throw new HandleException("订单无法取消");
         }
+    }
+
+    @Override
+    @Transactional
+    public void orderEvaluate(String openid, long order_id, int type, String message, String foods) throws HandleException {
+        if (type != 1 && type != 2) {
+            throw new HandleException("不支持的操作类型");
+        }
+        if (message.equals("")) {
+            throw new HandleException("评论内容不能为空");
+        }
+        if (message.length() > 500) {
+            throw new HandleException("评论内容不能超过500字符");
+        }
+        FoodOrder foodOrder = new FoodOrder();
+        foodOrder.setId(order_id);
+        foodOrder.setOpenid(openid);
+        int status = foodOrderDao.queryStatus(foodOrder);
+        if (status != 1) {
+            throw new HandleException("该订单不可评论");
+        }
+        if (foods.equals("")) {
+            JSONArray jsonArray = JSONArray.parseArray(foods);
+            for (Object object : jsonArray) {
+                JSONObject jsonObject = (JSONObject) object;
+                FoodSale foodSale = new FoodSale();
+                foodSale.setFood_id(jsonObject.getLong("food_id"));
+                foodSale.setOrder_id(order_id);
+                foodSale.setPraise(type);
+                int result = foodSaleDao.updatePraise(foodSale);
+                if (result == 0) {
+                    throw new HandleException("存在菜品不可评论");
+                }
+            }
+        }
+        OrderEvaluate orderEvaluate = new OrderEvaluate();
+        orderEvaluate.setOrder_id(order_id);
+        orderEvaluate.setMessage(message);
+        orderEvaluate.setCreate_time(new Date());
+        orderEvaluate.setEvaluate_type(type);
+        try {
+            orderEvaluateDao.insert(orderEvaluate);
+        } catch (DuplicateKeyException e) {
+            throw new HandleException("请不要重复评论");
+        }
+    }
+
+    @Override
+    public void uploadEvaluatePicture(String openid, long order_id, MultipartFile file) throws HandleException {
+        if (file == null) {
+            throw new HandleException("图片不能为空");
+        }
+        FoodOrder foodOrder = new FoodOrder();
+        foodOrder.setId(order_id);
+        foodOrder.setOpenid(openid);
+        int status = foodOrderDao.queryStatus(foodOrder);
+        if (status != 1) {
+            throw new HandleException("该订单不可添加评论图片");
+        }
+        EvaluatePicture evaluatePicture = new EvaluatePicture();
+        evaluatePicture.setOrder_id(order_id);
+        try {
+            evaluatePicture.setPicture(FileUtil.save(file));
+        } catch (IOException e) {
+            throw new HandleException("图片保存失败");
+        }
+        evaluatePictureDao.insert(evaluatePicture);
     }
 }
