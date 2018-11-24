@@ -6,4 +6,7 @@
         INSERT INTO EVALUATE_PICTURE(order_id,picture) VALUES (#{order_id},#{picture})
     </insert>
 
+    <select id="query" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT picture FROM EVALUATE_PICTURE WHERE order_id = #{id}
+    </select>
 </mapper>

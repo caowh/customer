@@ -219,16 +219,16 @@ public class FoodServiceImpl implements FoodService {
         foodOrder.setOpenid(openid);
         int status = foodOrderDao.queryStatus(foodOrder);
         if (status != 1) {
-            throw new HandleException("该订单不可评论");
+            throw new HandleException("该订单尚未付款");
         }
         if (foods.equals("")) {
             JSONArray jsonArray = JSONArray.parseArray(foods);
             for (Object object : jsonArray) {
                 JSONObject jsonObject = (JSONObject) object;
                 FoodSale foodSale = new FoodSale();
-                foodSale.setFood_id(jsonObject.getLong("food_id"));
+                foodSale.setFood_id(jsonObject.getLong("id"));
                 foodSale.setOrder_id(order_id);
-                foodSale.setPraise(type);
+                foodSale.setPraise(jsonObject.getIntValue("type"));
                 int result = foodSaleDao.updatePraise(foodSale);
                 if (result == 0) {
                     throw new HandleException("存在菜品不可评论");
@@ -257,7 +257,7 @@ public class FoodServiceImpl implements FoodService {
         foodOrder.setOpenid(openid);
         int status = foodOrderDao.queryStatus(foodOrder);
         if (status != 1) {
-            throw new HandleException("该订单不可添加评论图片");
+            throw new HandleException("该订单尚未付款");
         }
         EvaluatePicture evaluatePicture = new EvaluatePicture();
         evaluatePicture.setOrder_id(order_id);
@@ -267,5 +267,25 @@ public class FoodServiceImpl implements FoodService {
             throw new HandleException("图片保存失败");
         }
         evaluatePictureDao.insert(evaluatePicture);
+    }
+
+    @Override
+    public OrderEvaluate getOrderEvaluate(String openid, long order_id) throws HandleException {
+        FoodOrder foodOrder = new FoodOrder();
+        foodOrder.setId(order_id);
+        foodOrder.setOpenid(openid);
+        int status = foodOrderDao.queryStatus(foodOrder);
+        if(status != 1){
+            throw new HandleException("该订单尚未付款");
+        }
+        OrderEvaluate orderEvaluate = orderEvaluateDao.query(order_id);
+        if(orderEvaluate == null){
+            orderEvaluate = new OrderEvaluate();
+            orderEvaluate.setOrder_id(order_id);
+        }else {
+            orderEvaluate.setPictures(evaluatePictureDao.query(order_id));
+        }
+        orderEvaluate.setFoodSales(foodSaleDao.queryEvaluate(order_id));
+        return orderEvaluate;
     }
 }

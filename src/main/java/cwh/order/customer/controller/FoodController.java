@@ -140,4 +140,20 @@ public class FoodController {
         return map;
     }
 
+
+    @PostMapping("getOrderEvaluate")
+    public Map<String, Object> getOrderEvaluate(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        long id = Long.parseLong(getSafeParameter(request, "id"));
+        try {
+            foodService.getOrderEvaluate(openid, id);
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
+
 }

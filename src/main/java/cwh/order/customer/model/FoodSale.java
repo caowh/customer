@@ -15,4 +15,5 @@ public class FoodSale {
     private BigDecimal food_price;
     private int food_count;
     private int praise;
+
 }

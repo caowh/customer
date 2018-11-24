@@ -1,6 +1,7 @@
 package cwh.order.customer.service;
 
 import cwh.order.customer.model.FoodOrder;
+import cwh.order.customer.model.OrderEvaluate;
 import cwh.order.customer.util.HandleException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,4 +26,6 @@ public interface FoodService {
     void orderEvaluate(String openid, long order_id, int type, String message, String foods) throws HandleException;
 
     void uploadEvaluatePicture(String openid, long order_id, MultipartFile file) throws HandleException;
+
+    OrderEvaluate getOrderEvaluate(String openid, long order_id) throws HandleException;
 }

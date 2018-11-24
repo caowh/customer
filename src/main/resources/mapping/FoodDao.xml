@@ -4,10 +4,10 @@
 
     <select id="queryAll" parameterType="java.lang.String" resultType="cwh.order.customer.model.Food">
         SELECT f.id,f.f_name,f.description,f.price,f.classify_id,f.picture_url,fc.classify_name,
-        (SELECT sum(food_count) FROM FOOD_SALE WHERE food_id = f.id) AS total_sale,
+        (SELECT sum(food_count) FROM FOOD_SALE WHERE food_id = f.id AND status = 1) AS total_sale,
         (SELECT COUNT(0) FROM FOOD_SALE WHERE food_id = f.id AND praise = 1) AS praise_count
         FROM FOOD f JOIN FOOD_CLASSIFY fc ON fc.id = f.classify_id WHERE
-        fc.openid = #{store_id} AND f.status = 1 ORDER BY monthly_sale;
+        fc.openid = #{store_id} AND f.status = 1 ORDER BY total_sale DESC;
     </select>
 
     <select id="queryPrice" parameterType="java.lang.Long" resultType="java.math.BigDecimal">

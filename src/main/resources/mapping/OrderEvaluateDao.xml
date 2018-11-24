@@ -7,4 +7,7 @@
         VALUES (#{order_id},#{message},#{evaluate_type},#{create_time})
     </insert>
 
+    <select id="query" parameterType="java.lang.Long" resultType="cwh.order.customer.model.OrderEvaluate">
+        SELECT order_id,message,evaluate_type,create_time FROM ORDER_EVALUATE WHERE order_id = #{id}
+    </select>
 </mapper>

@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface OrderEvaluateDao {
 
     void insert(OrderEvaluate orderEvaluate);
+
+    OrderEvaluate query(long id);
 }
