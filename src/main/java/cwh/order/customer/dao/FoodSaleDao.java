@@ -17,5 +17,9 @@ public interface FoodSaleDao {
 
     List<FoodSale> queryEvaluate(long id);
 
+    List<Long> queryFoodIds(long id);
+
     int updatePraise(FoodSale foodSale);
+
+    int updateStatus(FoodSale foodSale);
 }

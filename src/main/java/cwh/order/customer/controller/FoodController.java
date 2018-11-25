@@ -112,7 +112,7 @@ public class FoodController {
         long id = Long.parseLong(getSafeParameter(request, "id"));
         int type = Integer.parseInt(getSafeParameter(request, "type"));
         String message = getSafeParameter(request, "message");
-        String foods = getSafeParameter(request, "foods");
+        String foods = request.getParameter("foods").replaceAll("'", "‘");
         try {
             foodService.orderEvaluate(openid, id, type, message, foods);
             map.put("status", Constant.CODE_OK);
@@ -147,7 +147,22 @@ public class FoodController {
         String openid = request.getAttribute("openid").toString();
         long id = Long.parseLong(getSafeParameter(request, "id"));
         try {
-            foodService.getOrderEvaluate(openid, id);
+            map.put("message", foodService.getOrderEvaluate(openid, id));
+            map.put("status", Constant.CODE_OK);
+        } catch (HandleException e) {
+            map.put("status", Constant.CODE_ERROR);
+            map.put("error_message", e.getMessage());
+        }
+        return map;
+    }
+
+    @PostMapping("orderPay")
+    public Map<String, Object> orderPay(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        String openid = request.getAttribute("openid").toString();
+        long id = Long.parseLong(getSafeParameter(request, "id"));
+        try {
+            foodService.orderPay(openid, id);
             map.put("status", Constant.CODE_OK);
         } catch (HandleException e) {
             map.put("status", Constant.CODE_ERROR);

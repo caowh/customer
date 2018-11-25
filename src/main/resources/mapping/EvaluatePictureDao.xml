@@ -9,4 +9,8 @@
     <select id="query" parameterType="java.lang.Long" resultType="java.lang.String">
         SELECT picture FROM EVALUATE_PICTURE WHERE order_id = #{id}
     </select>
+
+    <select id="queryCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT count(0) FROM EVALUATE_PICTURE WHERE order_id = #{id} FOR UPDATE
+    </select>
 </mapper>

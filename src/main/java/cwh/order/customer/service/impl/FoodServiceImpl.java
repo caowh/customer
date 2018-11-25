@@ -44,7 +44,7 @@ public class FoodServiceImpl implements FoodService {
     private EvaluatePictureDao evaluatePictureDao;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = HandleException.class)
     public Map getFoods(String openid, String store_id, String table_id) throws HandleException {
         Map<String, Object> map = new HashMap<>();
         if (store_id.equals("")) {
@@ -62,13 +62,14 @@ public class FoodServiceImpl implements FoodService {
         if (store.getBusiness() == 0) {
             throw new HandleException("店铺已打烊");
         }
+        map.put("count", foodOrderDao.queryCountByStore(store_id));
         map.put("store", store);
         map.put("foods", foodDao.queryAll(store_id));
         return map;
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = HandleException.class)
     public void order(String openid, String foods, String store_id, String table_id, String order, String phone, String message) throws HandleException {
         String table_name = null;
         if (store_id.equals("")) {
@@ -176,7 +177,7 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = HandleException.class)
     public FoodOrder getOrderDetail(String openid, long order_id) throws HandleException {
         FoodOrder foodOrder = new FoodOrder();
         foodOrder.setId(order_id);
@@ -203,13 +204,10 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = HandleException.class)
     public void orderEvaluate(String openid, long order_id, int type, String message, String foods) throws HandleException {
         if (type != 1 && type != 2) {
             throw new HandleException("不支持的操作类型");
-        }
-        if (message.equals("")) {
-            throw new HandleException("评论内容不能为空");
         }
         if (message.length() > 500) {
             throw new HandleException("评论内容不能超过500字符");
@@ -221,18 +219,20 @@ public class FoodServiceImpl implements FoodService {
         if (status != 1) {
             throw new HandleException("该订单尚未付款");
         }
-        if (foods.equals("")) {
-            JSONArray jsonArray = JSONArray.parseArray(foods);
-            for (Object object : jsonArray) {
-                JSONObject jsonObject = (JSONObject) object;
-                FoodSale foodSale = new FoodSale();
-                foodSale.setFood_id(jsonObject.getLong("id"));
-                foodSale.setOrder_id(order_id);
-                foodSale.setPraise(jsonObject.getIntValue("type"));
-                int result = foodSaleDao.updatePraise(foodSale);
-                if (result == 0) {
-                    throw new HandleException("存在菜品不可评论");
-                }
+        JSONArray jsonArray = JSONArray.parseArray(foods);
+        for (Object object : jsonArray) {
+            JSONObject jsonObject = (JSONObject) object;
+            FoodSale foodSale = new FoodSale();
+            foodSale.setFood_id(jsonObject.getLong("food_id"));
+            foodSale.setOrder_id(order_id);
+            int praise = jsonObject.getIntValue("praise");
+            if (praise != 1 && praise != 2) {
+                throw new HandleException("不支持的操作类型");
+            }
+            foodSale.setPraise(praise);
+            int result = foodSaleDao.updatePraise(foodSale);
+            if (result == 0) {
+                throw new HandleException("存在菜品不可评论");
             }
         }
         OrderEvaluate orderEvaluate = new OrderEvaluate();
@@ -248,6 +248,7 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
+    @Transactional(rollbackFor = HandleException.class)
     public void uploadEvaluatePicture(String openid, long order_id, MultipartFile file) throws HandleException {
         if (file == null) {
             throw new HandleException("图片不能为空");
@@ -266,26 +267,58 @@ public class FoodServiceImpl implements FoodService {
         } catch (IOException e) {
             throw new HandleException("图片保存失败");
         }
+        if (evaluatePictureDao.queryCount(order_id) == 3) {
+            throw new HandleException("最多只能添加三张评论图片");
+        }
         evaluatePictureDao.insert(evaluatePicture);
     }
 
     @Override
+    @Transactional(rollbackFor = HandleException.class)
     public OrderEvaluate getOrderEvaluate(String openid, long order_id) throws HandleException {
         FoodOrder foodOrder = new FoodOrder();
         foodOrder.setId(order_id);
         foodOrder.setOpenid(openid);
         int status = foodOrderDao.queryStatus(foodOrder);
-        if(status != 1){
+        if (status != 1) {
             throw new HandleException("该订单尚未付款");
         }
         OrderEvaluate orderEvaluate = orderEvaluateDao.query(order_id);
-        if(orderEvaluate == null){
+        List<String> list;
+        if (orderEvaluate == null) {
             orderEvaluate = new OrderEvaluate();
             orderEvaluate.setOrder_id(order_id);
-        }else {
-            orderEvaluate.setPictures(evaluatePictureDao.query(order_id));
+            list = new ArrayList<>();
+        } else {
+            list = evaluatePictureDao.query(order_id);
         }
+        orderEvaluate.setPictures(list);
         orderEvaluate.setFoodSales(foodSaleDao.queryEvaluate(order_id));
         return orderEvaluate;
+    }
+
+    @Override
+    @Transactional(rollbackFor = HandleException.class)
+    public void orderPay(String openid, long order_id) throws HandleException {
+        FoodOrder foodOrder = new FoodOrder();
+        foodOrder.setId(order_id);
+        foodOrder.setOpenid(openid);
+        foodOrder.setStatus(1);
+        int result = foodOrderDao.updateStatus(foodOrder);
+        if(result == 0){
+            throw new HandleException("该订单已付款");
+        }
+        List<Long> ids = foodSaleDao.queryFoodIds(order_id);
+        for(Long id:ids){
+            FoodSale foodSale=new FoodSale();
+            foodSale.setOrder_id(order_id);
+            foodSale.setFood_id(id);
+            foodSale.setStatus(1);
+            int result1 = foodSaleDao.updateStatus(foodSale);
+            if(result1 == 0){
+                throw new HandleException("菜品已付款");
+            }
+        }
+
     }
 }

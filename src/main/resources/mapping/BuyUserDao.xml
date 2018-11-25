@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cwh.order.customer.dao.BuyUserDao">
+
+   <insert id="insert" parameterType="cwh.order.customer.model.BuyUser">
+       INSERT INTO BUY_USER(openid,phone) VALUES(#{openid},#{phone})
+   </insert>
+
+    <select id="queryPhone" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT phone FROM BUY_USER WHERE openid = #{openid} FOR UPDATE
+    </select>
+
+    <update id="updatePhone" parameterType="cwh.order.customer.model.BuyUser">
+        UPDATE BUY_USER SET phone = #{phone} WHERE openid = #{openid}
+    </update>
+</mapper>

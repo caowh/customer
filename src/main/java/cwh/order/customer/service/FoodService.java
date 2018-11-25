@@ -28,4 +28,6 @@ public interface FoodService {
     void uploadEvaluatePicture(String openid, long order_id, MultipartFile file) throws HandleException;
 
     OrderEvaluate getOrderEvaluate(String openid, long order_id) throws HandleException;
+
+    void orderPay(String openid, long order_id) throws HandleException;
 }

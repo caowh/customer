@@ -21,7 +21,7 @@ public class Constant {
 
     public static final String separator = "%%";
 
-    public static final String phoneKey = "phoneKey";
+    public static final String phoneKey = "buyPhoneKey";
 
     public static final String ERROR = "网络异常，稍后重试";
 

@@ -15,6 +15,8 @@ public interface FoodOrderDao {
 
     int queryCount(long id);
 
+    int queryCountByStore(String store_id);
+
     FoodOrder queryDetail(FoodOrder foodOrder);
 
     List<FoodOrder> query(PageQuery pageQuery);

@@ -1,5 +1,6 @@
 package cwh.order.customer.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.util.Date;
@@ -14,6 +15,7 @@ public class OrderEvaluate {
     private long order_id;
     private String message;
     private int evaluate_type;
+    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date create_time;
 
     private List<String> pictures;

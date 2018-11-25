@@ -14,4 +14,6 @@ public interface EvaluatePictureDao {
     void insert(EvaluatePicture evaluatePicture);
 
     List<String> query(long id);
+
+    int queryCount(long id);
 }

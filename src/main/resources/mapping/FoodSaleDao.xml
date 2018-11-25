@@ -18,4 +18,12 @@
     <select id="queryEvaluate" parameterType="java.lang.Long" resultType="cwh.order.customer.model.FoodSale">
         SELECT food_id,food_name,praise FROM FOOD_SALE WHERE order_id = #{id}
     </select>
+
+    <select id="queryFoodIds" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT food_id FROM FOOD_SALE WHERE order_id = #{id}
+    </select>
+
+    <update id="updateStatus" parameterType="cwh.order.customer.model.FoodSale">
+        UPDATE FOOD_SALE SET status = #{status} WHERE order_id = #{order_id} AND food_id = #{food_id} AND status=0
+    </update>
 </mapper>
