@@ -305,20 +305,20 @@ public class FoodServiceImpl implements FoodService {
         foodOrder.setOpenid(openid);
         foodOrder.setStatus(1);
         int result = foodOrderDao.updateStatus(foodOrder);
-        if(result == 0){
+        if (result == 0) {
             throw new HandleException("该订单已付款");
         }
         List<Long> ids = foodSaleDao.queryFoodIds(order_id);
-        for(Long id:ids){
-            FoodSale foodSale=new FoodSale();
+        for (Long id : ids) {
+            FoodSale foodSale = new FoodSale();
             foodSale.setOrder_id(order_id);
             foodSale.setFood_id(id);
             foodSale.setStatus(1);
             int result1 = foodSaleDao.updateStatus(foodSale);
-            if(result1 == 0){
+            if (result1 == 0) {
                 throw new HandleException("菜品已付款");
             }
         }
-
+        redisTemplate.convertAndSend("orderNew", foodOrderDao.queryStore(order_id));
     }
 }

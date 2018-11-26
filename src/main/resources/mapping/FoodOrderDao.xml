@@ -33,6 +33,7 @@
     <select id="queryCountByStore" parameterType="java.lang.String" resultType="java.lang.Integer">
         SELECT COUNT(0) FROM FOOD_ORDER WHERE store_id = #{store_id} AND status = 1
     </select>
+
     <select id="queryDetail" parameterType="cwh.order.customer.model.FoodOrder"
             resultType="cwh.order.customer.model.FoodOrder">
         SELECT id,table_id,t_name,create_time,store_id,store_name,total_price,phone,message,sort,headPictureUrl,status,
@@ -46,5 +47,9 @@
 
     <select id="queryStatus" parameterType="cwh.order.customer.model.FoodOrder" resultType="java.lang.Integer">
         SELECT status FROM FOOD_ORDER WHERE id = #{id} AND openid = #{openid} FOR UPDATE
+    </select>
+
+    <select id="queryStore" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT store_id FROM FOOD_ORDER WHERE id = #{id}
     </select>
 </mapper>

@@ -24,4 +24,6 @@ public interface FoodOrderDao {
     int updateStatus(FoodOrder foodOrder);
 
     int queryStatus(FoodOrder foodOrder);
+
+    String queryStore(long id);
 }
