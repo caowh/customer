@@ -319,6 +319,6 @@ public class FoodServiceImpl implements FoodService {
                 throw new HandleException("菜品已付款");
             }
         }
-        redisTemplate.convertAndSend("orderNew", foodOrderDao.queryStore(order_id));
+        redisTemplate.convertAndSend("orderNew", order_id);
     }
 }
